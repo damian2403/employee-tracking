@@ -1,17 +1,16 @@
 // Firebase configuration
-var firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+const firebaseConfig = {
+  apiKey: "AIzaSyBkUeSPq0Wb4QjHDIUGzeE4LxHUYUarRrM",
+  authDomain: "employeetracking-a71f0.firebaseapp.com",
+  projectId: "employeetracking-a71f0",
+  storageBucket: "employeetracking-a71f0.appspot.com",
+  messagingSenderId: "214728548636",
+  appId: "YOUR_APP_ID"
 };
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-var database = firebase.database();
 
+// Your existing code
 function addEmployee() {
     const name = document.getElementById('employeeName').value.trim();
     const barcode = document.getElementById('employeeBarcode').value.trim();
@@ -215,3 +214,4 @@ function closeDetails() {
 }
 
 window.onload = displayEmployees;
+

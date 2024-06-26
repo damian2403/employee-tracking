@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zarządzanie czasem pracy</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .delete-btn {
+            background-color: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #employeeDetails {
+            display: none;
+        }
+        .remove-btn {
+            background-color: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Zarządzanie czasem pracy pracowników</h1>
+
+    <h2>Dodaj pracownika</h2>
+    <input type="text" id="employeeName" placeholder="Imię i nazwisko">
+    <input type="text" id="employeeBarcode" placeholder="Kod EAN">
+    <button onclick="addEmployee()">Dodaj pracownika</button>
+
+    <h2>Rejestracja czasu pracy</h2>
+    <input type="text" id="barcodeInput" placeholder="Skanuj kod pracownika" autofocus>
+    <button onclick="registerTime()">Zarejestruj czas</button>
+
+    <h2>Lista pracowników</h2>
+    <div id="employeesList"></div>
+
+    <div id="employeeDetails">
+        <h2>Szczegóły pracownika</h2>
+        <button onclick="closeDetails()">Zamknij</button>
+        <div id="employeeInfo"></div>
+        <table id="workTimesTable">
+            <thead>
+                <tr>
+                    <th>Dzień</th>
+                    <th>Data</th>
+                    <th>Czas Przyjścia</th>
+                    <th>Czas Wyjścia</th>
+                    <th>Łączny Czas Pracy</th>
+                    <th>Akcje</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+    <!-- Add Firebase products that you want to use -->
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -2,15 +2,15 @@
 const firebaseConfig = {
   apiKey: "AIzaSyBkUeSPq0Wb4QjHDIUGzeE4LxHUYUarRrM",
   authDomain: "employeetracking-a71f0.firebaseapp.com",
+  databaseURL: "https://employeetracking-a71f0-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "employeetracking-a71f0",
   storageBucket: "employeetracking-a71f0.appspot.com",
   messagingSenderId: "214728548636",
-  appId: "YOUR_APP_ID"
+  appId: "1:214728548636:web:bfeb91a11c2dfc9c8e5b6e"
 };
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
-// Your existing code
 function addEmployee() {
     const name = document.getElementById('employeeName').value.trim();
     const barcode = document.getElementById('employeeBarcode').value.trim();
@@ -27,6 +27,7 @@ function addEmployee() {
         times: []
     }, (error) => {
         if (error) {
+            console.error("Błąd podczas dodawania pracownika:", error);
             alert("Błąd podczas dodawania pracownika: " + error);
         } else {
             console.log("Pracownik dodany pomyślnie:", name, barcode);
@@ -59,6 +60,7 @@ function registerTime() {
         }
         employeeRef.update({ times: times }, (error) => {
             if (error) {
+                console.error("Błąd podczas rejestrowania czasu:", error);
                 alert("Błąd podczas rejestrowania czasu: " + error);
             } else {
                 console.log("Zarejestrowano czas:", times);
@@ -143,6 +145,7 @@ function updateInTime(barcode, index, newValue) {
         timeEntry.in = newInTime.toISOString();
         employeeRef.update({ times: employee.times }, (error) => {
             if (error) {
+                console.error("Błąd podczas aktualizacji czasu przyjścia:", error);
                 alert("Błąd podczas aktualizacji czasu przyjścia: " + error);
             } else {
                 viewEmployee(barcode);
@@ -168,6 +171,7 @@ function updateOutTime(barcode, index, newValue) {
         timeEntry.out = newOutTime.toISOString();
         employeeRef.update({ times: employee.times }, (error) => {
             if (error) {
+                console.error("Błąd podczas aktualizacji czasu wyjścia:", error);
                 alert("Błąd podczas aktualizacji czasu wyjścia: " + error);
             } else {
                 viewEmployee(barcode);
@@ -186,6 +190,7 @@ function deleteEntry(barcode, index) {
         employee.times.splice(index, 1);
         employeeRef.update({ times: employee.times }, (error) => {
             if (error) {
+                console.error("Błąd podczas usuwania wpisu czasu:", error);
                 alert("Błąd podczas usuwania wpisu czasu: " + error);
             } else {
                 viewEmployee(barcode);
@@ -199,6 +204,7 @@ function removeEmployee(barcode) {
     if (confirm(`Czy na pewno chcesz usunąć pracownika ${barcode}?`)) {
         firebase.database().ref('employees/' + barcode).remove((error) => {
             if (error) {
+                console.error("Błąd podczas usuwania pracownika:", error);
                 alert("Błąd podczas usuwania pracownika: " + error);
             } else {
                 displayEmployees();

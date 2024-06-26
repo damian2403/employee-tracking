@@ -1,79 +1,218 @@
-<!DOCTYPE html>
-<html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zarządzanie czasem pracy</title>
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid black;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .delete-btn {
-            background-color: red;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        #employeeDetails {
-            display: none;
-        }
-        .remove-btn {
-            background-color: red;
-            color: white;
-            border: none;
-            cursor: pointer;
-            padding: 5px;
-        }
-    </style>
-</head>
-<body>
-    <h1>Zarządzanie czasem pracy pracowników</h1>
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBkUeSPq0Wb4QjHDIUGzeE4LxHUYUarRrM",
+  authDomain: "employeetracking-a71f0.firebaseapp.com",
+  projectId: "employeetracking-a71f0",
+  storageBucket: "employeetracking-a71f0.appspot.com",
+  messagingSenderId: "214728548636",
+  appId: "YOUR_APP_ID"
+};
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
 
-    <h2>Dodaj pracownika</h2>
-    <input type="text" id="employeeName" placeholder="Imię i nazwisko">
-    <input type="text" id="employeeBarcode" placeholder="Kod EAN">
-    <button onclick="addEmployee()">Dodaj pracownika</button>
+// Your existing code
+function addEmployee() {
+    const name = document.getElementById('employeeName').value.trim();
+    const barcode = document.getElementById('employeeBarcode').value.trim();
 
-    <h2>Rejestracja czasu pracy</h2>
-    <input type="text" id="barcodeInput" placeholder="Skanuj kod pracownika" autofocus>
-    <button onclick="registerTime()">Zarejestruj czas</button>
+    console.log("Próba dodania pracownika:", name, barcode);
 
-    <h2>Lista pracowników</h2>
-    <div id="employeesList"></div>
+    if (!name || !barcode) {
+        alert("Proszę wprowadzić imię i nazwisko oraz kod EAN pracownika!");
+        return;
+    }
 
-    <div id="employeeDetails">
-        <h2>Szczegóły pracownika</h2>
-        <button onclick="closeDetails()">Zamknij</button>
-        <div id="employeeInfo"></div>
-        <table id="workTimesTable">
-            <thead>
-                <tr>
-                    <th>Dzień</th>
-                    <th>Data</th>
-                    <th>Czas Przyjścia</th>
-                    <th>Czas Wyjścia</th>
-                    <th>Łączny Czas Pracy</th>
-                    <th>Akcje</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
+    firebase.database().ref('employees/' + barcode).set({
+        name: name,
+        times: []
+    }, (error) => {
+        if (error) {
+            alert("Błąd podczas dodawania pracownika: " + error);
+        } else {
+            console.log("Pracownik dodany pomyślnie:", name, barcode);
+            displayEmployees();
+            document.getElementById('employeeName').value = '';
+            document.getElementById('employeeBarcode').value = '';
+        }
+    });
+}
 
-    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
-    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
-    <!-- Add Firebase products that you want to use -->
-    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
-    <script src="app.js"></script>
-</body>
-</html>
+function registerTime() {
+    const barcode = document.getElementById('barcodeInput').value.trim();
+    if (!barcode) {
+        alert('Proszę wprowadzić kod EAN!');
+        return;
+    }
+    const employeeRef = firebase.database().ref('employees/' + barcode);
+    employeeRef.once('value').then((snapshot) => {
+        const employee = snapshot.val();
+        if (!employee) {
+            alert('Pracownik o podanym kodzie EAN nie istnieje!');
+            return;
+        }
+        const currentTime = new Date();
+        const times = employee.times || [];
+        if (times.length && !times[times.length - 1].out) {
+            times[times.length - 1].out = currentTime.toISOString();
+        } else {
+            times.push({ in: currentTime.toISOString() });
+        }
+        employeeRef.update({ times: times }, (error) => {
+            if (error) {
+                alert("Błąd podczas rejestrowania czasu: " + error);
+            } else {
+                console.log("Zarejestrowano czas:", times);
+                displayEmployees();
+                document.getElementById('barcodeInput').value = '';
+            }
+        });
+    });
+}
+
+function displayEmployees() {
+    const list = document.getElementById('employeesList');
+    list.innerHTML = '<table><thead><tr><th>Imię i nazwisko</th><th>Kod EAN</th><th>Akcje</th></tr></thead><tbody></tbody></table>';
+    const tbody = list.querySelector('tbody');
+
+    firebase.database().ref('employees').once('value').then((snapshot) => {
+        const employees = snapshot.val();
+        if (!employees) {
+            console.log("Brak pracowników w bazie.");
+            return;
+        }
+        Object.keys(employees).forEach(barcode => {
+            const employee = employees[barcode];
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${employee.name}</td><td>${barcode}</td>
+                             <td>
+                                <button onclick="viewEmployee('${barcode}')">Pokaż szczegóły</button>
+                                <button class="remove-btn" onclick="removeEmployee('${barcode}')">X</button>
+                             </td>`;
+            tbody.appendChild(row);
+        });
+        console.log("Aktualna lista pracowników:", employees);
+    });
+}
+
+function viewEmployee(barcode) {
+    const employeeRef = firebase.database().ref('employees/' + barcode);
+    employeeRef.once('value').then((snapshot) => {
+        const employee = snapshot.val();
+        if (!employee) return;
+
+        document.getElementById('employeeDetails').style.display = 'block';
+        document.getElementById('employeeInfo').innerHTML = `<h3>${employee.name} (Kod: ${barcode})</h3>`;
+
+        const tbody = document.getElementById('workTimesTable').querySelector('tbody');
+        tbody.innerHTML = '';
+
+        employee.times.forEach((time, index) => {
+            const inTime = new Date(time.in);
+            const outTime = time.out ? new Date(time.out) : null;
+            const duration = outTime ? ((outTime - inTime) / 3600000).toFixed(2) : 'Praca trwa...';
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${inTime.toLocaleDateString('pl-PL', { weekday: 'long' })}</td>
+                <td>${inTime.toLocaleDateString('pl-PL')}</td>
+                <td><input type="text" value="${inTime.toLocaleTimeString('pl-PL')}" onchange="updateInTime('${barcode}', ${index}, this.value)"></td>
+                <td>${outTime ? `<input type="text" value="${outTime.toLocaleTimeString('pl-PL')}" onchange="updateOutTime('${barcode}', ${index}, this.value)">` : 'Praca trwa...'}</td>
+                <td>${duration} godz.</td>
+                <td><button class="delete-btn" onclick="deleteEntry('${barcode}', ${index})">Usuń</button></td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        console.log("Wyświetlono szczegóły dla:", employee);
+    });
+}
+
+function updateInTime(barcode, index, newValue) {
+    const employeeRef = firebase.database().ref('employees/' + barcode);
+    employeeRef.once('value').then((snapshot) => {
+        const employee = snapshot.val();
+        if (!employee) return;
+
+        const timeEntry = employee.times[index];
+        if (!timeEntry) return;
+
+        const [hours, minutes] = newValue.split(':');
+        const newInTime = new Date(timeEntry.in);
+        newInTime.setHours(hours, minutes);
+
+        timeEntry.in = newInTime.toISOString();
+        employeeRef.update({ times: employee.times }, (error) => {
+            if (error) {
+                alert("Błąd podczas aktualizacji czasu przyjścia: " + error);
+            } else {
+                viewEmployee(barcode);
+                console.log("Zaktualizowano czas przyjścia:", timeEntry);
+            }
+        });
+    });
+}
+
+function updateOutTime(barcode, index, newValue) {
+    const employeeRef = firebase.database().ref('employees/' + barcode);
+    employeeRef.once('value').then((snapshot) => {
+        const employee = snapshot.val();
+        if (!employee) return;
+
+        const timeEntry = employee.times[index];
+        if (!timeEntry) return;
+
+        const [hours, minutes] = newValue.split(':');
+        const newOutTime = new Date(timeEntry.out);
+        newOutTime.setHours(hours, minutes);
+
+        timeEntry.out = newOutTime.toISOString();
+        employeeRef.update({ times: employee.times }, (error) => {
+            if (error) {
+                alert("Błąd podczas aktualizacji czasu wyjścia: " + error);
+            } else {
+                viewEmployee(barcode);
+                console.log("Zaktualizowano czas wyjścia:", timeEntry);
+            }
+        });
+    });
+}
+
+function deleteEntry(barcode, index) {
+    const employeeRef = firebase.database().ref('employees/' + barcode);
+    employeeRef.once('value').then((snapshot) => {
+        const employee = snapshot.val();
+        if (!employee) return;
+
+        employee.times.splice(index, 1);
+        employeeRef.update({ times: employee.times }, (error) => {
+            if (error) {
+                alert("Błąd podczas usuwania wpisu czasu: " + error);
+            } else {
+                viewEmployee(barcode);
+                console.log("Usunięto wpis czasu:", employee.times);
+            }
+        });
+    });
+}
+
+function removeEmployee(barcode) {
+    if (confirm(`Czy na pewno chcesz usunąć pracownika ${barcode}?`)) {
+        firebase.database().ref('employees/' + barcode).remove((error) => {
+            if (error) {
+                alert("Błąd podczas usuwania pracownika: " + error);
+            } else {
+                displayEmployees();
+                console.log("Usunięto pracownika:", barcode);
+            }
+        });
+    }
+}
+
+function closeDetails() {
+    document.getElementById('employeeDetails').style.display = 'none';
+    console.log("Zamknięto szczegóły pracownika.");
+}
+
+window.onload = displayEmployees;
+
 

@@ -44,8 +44,8 @@
     <button onclick="addEmployee()">Dodaj pracownika</button>
 
     <h2>Rejestracja czasu pracy</h2>
-    <input type="text" id="barcodeInput" placeholder="Skanuj kod pracownika" autofocus>
-    <button onclick="registerTime()">Zarejestruj czas</button>
+    <input type="text" id="barcodeInput" placeholder="Skanuj kod pracownika" autofocus oninput="registerTime()">
+    <div id="message"></div>
 
     <h2>Lista pracowników</h2>
     <div id="employeesList"></div>

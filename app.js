@@ -117,10 +117,15 @@ function viewEmployee(barcode) {
         const tbody = document.getElementById('workTimesTable').querySelector('tbody');
         tbody.innerHTML = '';
 
+        let totalDuration = 0;
+
         employee.times.forEach((time, index) => {
             const inTime = new Date(time.in);
             const outTime = time.out ? new Date(time.out) : null;
-            const duration = outTime ? formatDuration(outTime - inTime) : 'Praca trwa...';
+            const duration = outTime ? (outTime - inTime) : null;
+            if (duration) totalDuration += duration;
+
+            const formattedDuration = duration ? formatDuration(duration) : 'Praca trwa...';
 
             const row = document.createElement('tr');
             row.innerHTML = `
@@ -128,11 +133,14 @@ function viewEmployee(barcode) {
                 <td>${inTime.toLocaleDateString('pl-PL')}</td>
                 <td><input type="text" value="${inTime.toLocaleTimeString('pl-PL')}" onchange="updateInTime('${barcode}', ${index}, this.value)"></td>
                 <td>${outTime ? `<input type="text" value="${outTime.toLocaleTimeString('pl-PL')}" onchange="updateOutTime('${barcode}', ${index}, this.value)">` : 'Praca trwa...'}</td>
-                <td>${duration}</td>
+                <td>${formattedDuration}</td>
                 <td><button class="delete-btn" onclick="deleteEntry('${barcode}', ${index})">Usuń</button></td>
             `;
             tbody.appendChild(row);
         });
+
+        const formattedTotalDuration = formatDuration(totalDuration);
+        document.getElementById('employeeInfo').innerHTML += `<h4>Łączny czas pracy: ${formattedTotalDuration}</h4>`;
 
         console.log("Wyświetlono szczegóły dla:", employee);
     });
@@ -229,3 +237,4 @@ function closeDetails() {
 }
 
 window.onload = displayEmployees;
+

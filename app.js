@@ -140,7 +140,7 @@ function viewEmployee(barcode) {
         });
 
         const formattedTotalDuration = formatDuration(totalDuration);
-        document.getElementById('employeeInfo').innerHTML += `<h4>Łączny czas pracy: ${formattedTotalDuration}</h4>`;
+        document.getElementById('totalWorkTime').innerText = formattedTotalDuration;
 
         console.log("Wyświetlono szczegóły dla:", employee);
     });
@@ -237,4 +237,3 @@ function closeDetails() {
 }
 
 window.onload = displayEmployees;
-

@@ -214,4 +214,3 @@ function closeDetails() {
 }
 
 window.onload = displayEmployees;
-

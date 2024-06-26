@@ -1,15 +1,24 @@
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBkUeSPq0Wb4QjHDIUGzeE4LxHUYUarRrM",
-  authDomain: "employeetracking-a71f0.firebaseapp.com",
-  databaseURL: "https://employeetracking-a71f0-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "employeetracking-a71f0",
-  storageBucket: "employeetracking-a71f0.appspot.com",
-  messagingSenderId: "214728548636",
-  appId: "1:214728548636:web:bfeb91a11c2dfc9c8e5b6e"
+    apiKey: "AIzaSyBkUeSPq0Wb4QjHDIUGzeE4LxHUYUarRrM",
+    authDomain: "employeetracking-a71f0.firebaseapp.com",
+    databaseURL: "https://employeetracking-a71f0-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "employeetracking-a71f0",
+    storageBucket: "employeetracking-a71f0.appspot.com",
+    messagingSenderId: "214728548636",
+    appId: "1:214728548636:web:bfeb91a11c2dfc9c8e5b6e"
 };
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
+
+// Funkcja do formatowania czasu
+function formatDuration(ms) {
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
 
 function addEmployee() {
     const name = document.getElementById('employeeName').value.trim();
@@ -111,7 +120,7 @@ function viewEmployee(barcode) {
         employee.times.forEach((time, index) => {
             const inTime = new Date(time.in);
             const outTime = time.out ? new Date(time.out) : null;
-            const duration = outTime ? ((outTime - inTime) / 3600000).toFixed(2) : 'Praca trwa...';
+            const duration = outTime ? formatDuration(outTime - inTime) : 'Praca trwa...';
 
             const row = document.createElement('tr');
             row.innerHTML = `
@@ -119,7 +128,7 @@ function viewEmployee(barcode) {
                 <td>${inTime.toLocaleDateString('pl-PL')}</td>
                 <td><input type="text" value="${inTime.toLocaleTimeString('pl-PL')}" onchange="updateInTime('${barcode}', ${index}, this.value)"></td>
                 <td>${outTime ? `<input type="text" value="${outTime.toLocaleTimeString('pl-PL')}" onchange="updateOutTime('${barcode}', ${index}, this.value)">` : 'Praca trwa...'}</td>
-                <td>${duration} godz.</td>
+                <td>${duration}</td>
                 <td><button class="delete-btn" onclick="deleteEntry('${barcode}', ${index})">Usuń</button></td>
             `;
             tbody.appendChild(row);

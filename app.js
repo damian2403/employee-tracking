@@ -50,7 +50,6 @@ function addEmployee() {
 function registerTime() {
     const barcode = document.getElementById('barcodeInput').value.trim();
     if (!barcode) {
-        alert('Proszę wprowadzić kod EAN!');
         return;
     }
     const employeeRef = firebase.database().ref('employees/' + barcode);
@@ -62,10 +61,14 @@ function registerTime() {
         }
         const currentTime = new Date();
         const times = employee.times || [];
+        const messageElement = document.getElementById('message');
+
         if (times.length && !times[times.length - 1].out) {
             times[times.length - 1].out = currentTime.toISOString();
+            messageElement.textContent = `Zakończono odliczanie czasu dla pracownika ${employee.name}.`;
         } else {
             times.push({ in: currentTime.toISOString() });
+            messageElement.textContent = `Rozpoczęto odliczanie czasu dla pracownika ${employee.name}.`;
         }
         employeeRef.update({ times: times }, (error) => {
             if (error) {
@@ -75,6 +78,7 @@ function registerTime() {
                 console.log("Zarejestrowano czas:", times);
                 displayEmployees();
                 document.getElementById('barcodeInput').value = '';
+                setTimeout(() => { messageElement.textContent = ''; }, 3000); // Usuwa komunikat po 3 sekundach
             }
         });
     });
